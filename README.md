@@ -2,7 +2,9 @@
 
 **Sentinel** is a CLI for making LLM systems deterministic, testable, and CI-safe.
 
-LLM outputs are non-deterministic by default. Sentinel adds explicit **contracts**, **repeatable tests**, and **deterministic pass/fail signals** so you can gate merges and releases the same way you do for traditional services.
+LLM outputs are non-deterministic by default. Sentinel adds explicit **contracts**, **repeatable tests**, and **deterministic pass/fail signals** so you can gate merges and releases like any other service.
+
+Think of Sentinel as tests and contracts for non-deterministic LLM outputs.
 
 ## What it does
 
@@ -14,6 +16,8 @@ LLM outputs are non-deterministic by default. Sentinel adds explicit **contracts
 - **Audit** — append-only logs with verify and replay
 
 ## Install
+
+Requires Python 3.11+
 
 ```bash
 pip install sentinel-cli
@@ -54,6 +58,8 @@ Expected (stdout includes):
 ```text
 GUARD SUMMARY total=1 pass=1 fail=0 error=0
 ```
+
+This runs entirely offline — no API keys required.
 
 Contract runs (`sentinel run`) and other subcommands need provider configuration
 and credentials as documented in `sentinel --help` and the sections below.
@@ -161,6 +167,7 @@ sentinel audit replay \
 - Provider-agnostic core; minimal dependencies  
 - Explicit failure modes  
 - No bundled dashboards or hosted infrastructure  
+- Designed to run in CI with deterministic exit codes  
 
 ## Who it is for
 
