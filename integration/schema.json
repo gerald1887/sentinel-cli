@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "command": {
+      "type": "string"
+    },
+    "execution_id": {
+      "type": "string"
+    },
+    "prompt_path": {
+      "type": "string"
+    },
+    "schema_path": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "timeout": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "command",
+    "execution_id",
+    "prompt_path",
+    "schema_path",
+    "provider",
+    "model",
+    "timeout"
+  ],
+  "additionalProperties": false
+}

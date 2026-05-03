@@ -1,0 +1,3 @@
+metric_family:
+  numeric:
+    max_abs_delta: 0.0

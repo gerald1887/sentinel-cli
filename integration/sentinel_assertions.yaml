@@ -1,0 +1,13 @@
+version: "1"
+assertions:
+  - id: a_name
+    type: exists
+    path: /name
+  - id: a_age
+    type: equals
+    path: /age
+    value: 30
+  - id: a_city
+    type: equals
+    path: /city
+    value: Mumbai

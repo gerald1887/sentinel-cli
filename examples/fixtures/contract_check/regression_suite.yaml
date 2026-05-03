@@ -1,0 +1,7 @@
+command: run
+cases:
+  - id: contract_case_1
+    prompt: examples/fixtures/contract_check/prompt_valid.txt
+    schema: examples/fixtures/contract_check/extraction_schema.json
+    provider: openai
+    model: gpt-4.1

@@ -1,0 +1,4 @@
+metrics:
+  - metric_id: m_age
+    family: numeric
+    path: /age

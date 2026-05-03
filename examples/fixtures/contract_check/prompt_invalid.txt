@@ -1,0 +1,10 @@
+Return JSON only.
+
+Produce exactly one object with only these fields:
+- name (string)
+- city (string)
+
+Do not include age.
+Use:
+- name: John
+- city: Bangalore

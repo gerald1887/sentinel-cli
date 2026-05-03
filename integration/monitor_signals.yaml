@@ -1,0 +1,6 @@
+signals:
+  - name: pass_count
+    type: count
+    options:
+      field: status
+      equals: PASS

@@ -1,0 +1,6 @@
+rules:
+  - id: r_pass
+    signal: pass_count
+    operator: eq
+    expected: 1
+    message: exactly one pass event required

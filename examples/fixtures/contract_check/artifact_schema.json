@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "exit_code", "stdout", "stderr"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "ERROR"]
+    },
+    "exit_code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "stdout": {
+      "type": "string"
+    },
+    "stderr": {
+      "type": "string"
+    }
+  }
+}

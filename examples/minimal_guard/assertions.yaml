@@ -1,0 +1,5 @@
+version: "1"
+assertions:
+  - id: has_score
+    type: exists
+    path: /score

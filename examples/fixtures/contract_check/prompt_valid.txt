@@ -1,0 +1,11 @@
+Return JSON only.
+
+Produce exactly one object with fields:
+- name (string)
+- age (number)
+- city (string)
+
+Use this concrete record:
+- name: John
+- age: 30
+- city: Bangalore
