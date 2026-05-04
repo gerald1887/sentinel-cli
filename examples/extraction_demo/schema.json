@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "required": ["invoice_id", "amount", "currency"],
+  "properties": {
+    "invoice_id": { "type": "string" },
+    "amount": { "type": "number" },
+    "currency": { "type": "string", "enum": ["INR", "USD"] }
+  },
+  "additionalProperties": false
+}
