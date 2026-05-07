@@ -19,8 +19,21 @@ Think of Sentinel as tests and contracts for non-deterministic LLM outputs.
 
 Requires Python 3.11+
 
+### Recommended (pipx)
+
+Clone the repository:
+
 ```bash
-pip install sentinel-cli
+git clone https://github.com/gerald1887/sentinel-cli.git
+cd sentinel-cli
+```
+
+Install with `pipx`:
+
+```bash
+sudo apt install pipx -y
+pipx ensurepath
+pipx install .
 ```
 
 ### Development install
@@ -33,6 +46,10 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
 pip install -e .
 ```
+
+Ubuntu 24.04+ follows PEP 668 and blocks global `pip install`
+into the system Python environment. Use `pipx` for global CLI
+installation or a virtual environment for development.
 
 ## CLI
 
