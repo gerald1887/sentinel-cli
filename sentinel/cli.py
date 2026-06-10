@@ -38,11 +38,65 @@ from sentinel.monitor.output import render_check
 from sentinel.monitor.rule_engine import evaluate_rules, load_rule_definitions
 
 
+def _fail(prefix: str, err: SentinelError) -> int:
+    print(f"{prefix} ERROR")
+    print(f"{err.category} {err.code} {err.message}")
+    return 2
+
+
 def _print_guard_summary(summary: dict[str, int]) -> None:
     print(
         "GUARD SUMMARY "
         f"total={summary['total']} pass={summary['pass']} fail={summary['fail']} error={summary['error']}"
     )
+
+# ---------------------------------------------------------------------------
+# Parser helpers
+# ---------------------------------------------------------------------------
+
+def _add_filter_args(parser: argparse.ArgumentParser, *, include_audit_id: bool = False) -> None:
+    """Add the standard timestamp/last/field filter arguments shared across inspect-style subcommands."""
+    parser.add_argument(
+        "--from",
+        dest="from_timestamp_utc",
+        required=False,
+        metavar="TIMESTAMP",
+        help="Inclusive lower timestamp bound (ISO-8601 UTC).",
+    )
+    parser.add_argument(
+        "--to",
+        dest="to_timestamp_utc",
+        required=False,
+        metavar="TIMESTAMP",
+        help="Inclusive upper timestamp bound (ISO-8601 UTC).",
+    )
+    parser.add_argument(
+        "--last",
+        type=int,
+        required=False,
+        metavar="N",
+        help="Return last N records after all other filters.",
+    )
+    parser.add_argument(
+        "--command",
+        dest="filter_command",
+        required=False,
+        metavar="COMMAND",
+        help="Filter by command.",
+    )
+    parser.add_argument("--provider", required=False, metavar="PROVIDER", help="Filter by provider.")
+    parser.add_argument("--model", required=False, metavar="MODEL", help="Filter by model.")
+    parser.add_argument(
+        "--event-type",
+        dest="inspect_event_type",
+        required=False,
+        metavar="TYPE",
+        help="Filter by event type.",
+    )
+    parser.add_argument("--case-id", required=False, metavar="CASE_ID", help="Filter by suite case id.")
+    parser.add_argument("--status", required=False, metavar="STATUS", help="Filter by status.")
+    if include_audit_id:
+        parser.add_argument("--audit-id", required=False, metavar="AUDIT_ID", help="Filter by audit id.")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -61,77 +115,30 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # --- run subcommand ---------------------------------------------------
     run_parser = subparsers.add_parser("run", help="Execute a contract run.")
+    run_parser.add_argument("--prompt", required=True, metavar="PATH", help="Path to the prompt file.")
+    run_parser.add_argument("--schema", required=True, metavar="PATH", help="Path to the JSON-schema file.")
+    run_parser.add_argument("--provider", required=True, metavar="PROVIDER", help="Provider name (e.g. openai).")
+    run_parser.add_argument("--model", required=True, metavar="MODEL", help="Model identifier (e.g. gpt-4o).")
     run_parser.add_argument(
-        "--prompt",
-        required=True,
-        metavar="PATH",
-        help="Path to the prompt file.",
+        "--timeout", type=int, default=60, metavar="SECONDS", help="Request timeout in seconds (default: 60)."
     )
     run_parser.add_argument(
-        "--schema",
-        required=True,
-        metavar="PATH",
-        help="Path to the JSON-schema file.",
-    )
-    run_parser.add_argument(
-        "--provider",
-        required=True,
-        metavar="PROVIDER",
-        help="Provider name (e.g. openai).",
-    )
-    run_parser.add_argument(
-        "--model",
-        required=True,
-        metavar="MODEL",
-        help="Model identifier (e.g. gpt-4o).",
-    )
-    run_parser.add_argument(
-        "--timeout",
-        type=int,
-        default=60,
-        metavar="SECONDS",
-        help="Request timeout in seconds (default: 60).",
-    )
-    run_parser.add_argument(
-        "--assertions",
-        required=False,
-        metavar="PATH",
-        help="Optional path to a guard assertions file.",
+        "--assertions", required=False, metavar="PATH", help="Optional path to a guard assertions file."
     )
 
     # --- validate subcommand ----------------------------------------------
     validate_parser = subparsers.add_parser("validate", help="Validate JSON input against a schema.")
-    validate_parser.add_argument(
-        "--input",
-        required=True,
-        metavar="PATH",
-        help="Path to input JSON file.",
-    )
-    validate_parser.add_argument(
-        "--schema",
-        required=True,
-        metavar="PATH",
-        help="Path to the JSON-schema file.",
-    )
+    validate_parser.add_argument("--input", required=True, metavar="PATH", help="Path to input JSON file.")
+    validate_parser.add_argument("--schema", required=True, metavar="PATH", help="Path to the JSON-schema file.")
 
     # --- test subcommand --------------------------------------------------
     test_parser = subparsers.add_parser("test", help="Regression testkit commands.")
     test_subparsers = test_parser.add_subparsers(dest="test_command", required=True)
 
     test_run_parser = test_subparsers.add_parser("run", help="Run a Regression test suite.")
-    test_run_parser.add_argument(
-        "--suite",
-        required=True,
-        metavar="PATH",
-        help="Path to the suite YAML file.",
-    )
+    test_run_parser.add_argument("--suite", required=True, metavar="PATH", help="Path to the suite YAML file.")
     test_update_parser = test_subparsers.add_parser("update", help="Update Regression snapshots.")
-    test_update_parser.add_argument(
-        "--suite",
-        required=True,
-        metavar="PATH",
-        help="Path to the suite YAML file.",
-    )
+    test_update_parser.add_argument("--suite", required=True, metavar="PATH", help="Path to the suite YAML file.")
 
     # --- guard subcommand -------------------------------------------------
     guard_parser = subparsers.add_parser("guard", help="Guardrail commands.")
@@ -139,16 +146,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
     guard_check_parser = guard_subparsers.add_parser("check", help="Run a guard check.")
     guard_check_parser.add_argument(
-        "--input",
-        required=True,
-        metavar="PATH",
-        help="Path to the model output JSON file.",
+        "--input", required=True, metavar="PATH", help="Path to the model output JSON file."
     )
     guard_check_parser.add_argument(
-        "--assertions",
-        required=True,
-        metavar="PATH",
-        help="Path to the assertions file.",
+        "--assertions", required=True, metavar="PATH", help="Path to the assertions file."
     )
 
     # --- drift subcommand -------------------------------------------------
@@ -156,200 +157,59 @@ def _build_parser() -> argparse.ArgumentParser:
     drift_subparsers = drift_parser.add_subparsers(dest="drift_command", required=True)
 
     drift_baseline_parser = drift_subparsers.add_parser("baseline", help="Build drift baseline.")
+    drift_baseline_parser.add_argument("--suite", required=True, metavar="PATH", help="Path to the suite YAML file.")
     drift_baseline_parser.add_argument(
-        "--suite",
-        required=True,
-        metavar="PATH",
-        help="Path to the suite YAML file.",
+        "--metrics", required=True, metavar="PATH", help="Path to the metrics config file."
     )
     drift_baseline_parser.add_argument(
-        "--metrics",
-        required=True,
-        metavar="PATH",
-        help="Path to the metrics config file.",
-    )
-    drift_baseline_parser.add_argument(
-        "--output",
-        required=True,
-        metavar="PATH",
-        help="Path to write baseline artifact JSON.",
+        "--output", required=True, metavar="PATH", help="Path to write baseline artifact JSON."
     )
 
     drift_check_parser = drift_subparsers.add_parser("check", help="Check drift against baseline.")
+    drift_check_parser.add_argument("--suite", required=True, metavar="PATH", help="Path to the suite YAML file.")
     drift_check_parser.add_argument(
-        "--suite",
-        required=True,
-        metavar="PATH",
-        help="Path to the suite YAML file.",
+        "--metrics", required=True, metavar="PATH", help="Path to the metrics config file."
     )
     drift_check_parser.add_argument(
-        "--metrics",
-        required=True,
-        metavar="PATH",
-        help="Path to the metrics config file.",
+        "--baseline", required=True, metavar="PATH", help="Path to baseline artifact JSON."
     )
     drift_check_parser.add_argument(
-        "--baseline",
-        required=True,
-        metavar="PATH",
-        help="Path to baseline artifact JSON.",
-    )
-    drift_check_parser.add_argument(
-        "--thresholds",
-        required=True,
-        metavar="PATH",
-        help="Path to thresholds config file.",
+        "--thresholds", required=True, metavar="PATH", help="Path to thresholds config file."
     )
 
     # --- monitor subcommand -----------------------------------------------
     monitor_parser = subparsers.add_parser("monitor", help="Runtime monitor commands.")
     monitor_subparsers = monitor_parser.add_subparsers(dest="monitor_command", required=True)
+
     monitor_record_parser = monitor_subparsers.add_parser("record", help="Record one monitor event.")
     monitor_record_parser.add_argument(
-        "--event-file",
-        required=True,
-        metavar="PATH",
-        help="Path to append event JSONL lines.",
+        "--event-file", required=True, metavar="PATH", help="Path to append event JSONL lines."
     )
+    monitor_record_parser.add_argument("--source", required=True, metavar="PATH", help="Path to source artifact JSON.")
     monitor_record_parser.add_argument(
-        "--source",
-        required=True,
-        metavar="PATH",
-        help="Path to source artifact JSON.",
+        "--event-type", required=True, metavar="TYPE", help="Event type for recorded event."
     )
-    monitor_record_parser.add_argument(
-        "--event-type",
-        required=True,
-        metavar="TYPE",
-        help="Event type for recorded event.",
-    )
+
     monitor_inspect_parser = monitor_subparsers.add_parser("inspect", help="Inspect monitor events.")
     monitor_inspect_parser.add_argument(
-        "--event-file",
-        required=True,
-        metavar="PATH",
-        help="Path to read event JSONL lines.",
+        "--event-file", required=True, metavar="PATH", help="Path to read event JSONL lines."
     )
-    monitor_inspect_parser.add_argument(
-        "--from",
-        dest="from_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive lower timestamp bound (ISO-8601 UTC).",
-    )
-    monitor_inspect_parser.add_argument(
-        "--to",
-        dest="to_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive upper timestamp bound (ISO-8601 UTC).",
-    )
-    monitor_inspect_parser.add_argument(
-        "--last",
-        type=int,
-        required=False,
-        metavar="N",
-        help="Return last N events after all other filters.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--command",
-        dest="filter_command",
-        required=False,
-        metavar="COMMAND",
-        help="Filter by command.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--provider",
-        required=False,
-        metavar="PROVIDER",
-        help="Filter by provider.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--model",
-        required=False,
-        metavar="MODEL",
-        help="Filter by model.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--event-type",
-        dest="inspect_event_type",
-        required=False,
-        metavar="TYPE",
-        help="Filter by event type.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--case-id",
-        required=False,
-        metavar="CASE_ID",
-        help="Filter by suite case id.",
-    )
-    monitor_inspect_parser.add_argument(
-        "--status",
-        required=False,
-        metavar="STATUS",
-        help="Filter by status.",
-    )
+    _add_filter_args(monitor_inspect_parser)
+
     monitor_summary_parser = monitor_subparsers.add_parser("summary", help="Compute monitor summary signals.")
     monitor_summary_parser.add_argument(
-        "--event-file",
-        required=True,
-        metavar="PATH",
-        help="Path to read event JSONL lines.",
+        "--event-file", required=True, metavar="PATH", help="Path to read event JSONL lines."
     )
     monitor_summary_parser.add_argument(
-        "--signals",
-        required=True,
-        metavar="PATH",
-        help="Path to signal config (JSON or YAML).",
+        "--signals", required=True, metavar="PATH", help="Path to signal config (JSON or YAML)."
     )
-    monitor_summary_parser.add_argument(
-        "--from",
-        dest="from_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive lower timestamp bound (ISO-8601 UTC).",
-    )
-    monitor_summary_parser.add_argument(
-        "--to",
-        dest="to_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive upper timestamp bound (ISO-8601 UTC).",
-    )
-    monitor_summary_parser.add_argument(
-        "--last",
-        type=int,
-        required=False,
-        metavar="N",
-        help="Return last N events after all other filters.",
-    )
-    monitor_summary_parser.add_argument(
-        "--command", dest="filter_command", required=False, metavar="COMMAND", help="Filter by command."
-    )
-    monitor_summary_parser.add_argument("--provider", required=False, metavar="PROVIDER", help="Filter by provider.")
-    monitor_summary_parser.add_argument("--model", required=False, metavar="MODEL", help="Filter by model.")
-    monitor_summary_parser.add_argument(
-        "--event-type",
-        dest="inspect_event_type",
-        required=False,
-        metavar="TYPE",
-        help="Filter by event type.",
-    )
-    monitor_summary_parser.add_argument("--case-id", required=False, metavar="CASE_ID", help="Filter by suite case id.")
-    monitor_summary_parser.add_argument("--status", required=False, metavar="STATUS", help="Filter by status.")
+    _add_filter_args(monitor_summary_parser)
+
     monitor_check_parser = monitor_subparsers.add_parser("check", help="Evaluate monitor rules.")
     monitor_check_parser.add_argument("--event-file", required=True, metavar="PATH", help="Path to event JSONL.")
     monitor_check_parser.add_argument("--signals", required=True, metavar="PATH", help="Path to signal config.")
     monitor_check_parser.add_argument("--rules", required=True, metavar="PATH", help="Path to rule config.")
-    monitor_check_parser.add_argument("--from", dest="from_timestamp_utc", required=False, metavar="TIMESTAMP")
-    monitor_check_parser.add_argument("--to", dest="to_timestamp_utc", required=False, metavar="TIMESTAMP")
-    monitor_check_parser.add_argument("--last", type=int, required=False, metavar="N")
-    monitor_check_parser.add_argument("--command", dest="filter_command", required=False, metavar="COMMAND")
-    monitor_check_parser.add_argument("--provider", required=False, metavar="PROVIDER")
-    monitor_check_parser.add_argument("--model", required=False, metavar="MODEL")
-    monitor_check_parser.add_argument("--event-type", dest="inspect_event_type", required=False, metavar="TYPE")
-    monitor_check_parser.add_argument("--case-id", required=False, metavar="CASE_ID")
-    monitor_check_parser.add_argument("--status", required=False, metavar="STATUS")
+    _add_filter_args(monitor_check_parser)
 
     # --- audit subcommand ---------------------------------------------------
     audit_root = subparsers.add_parser("audit", help="Compliance audit commands.")
@@ -357,189 +217,41 @@ def _build_parser() -> argparse.ArgumentParser:
 
     audit_record_parser = audit_subparsers.add_parser("record", help="Record an audit artifact.")
     audit_record_parser.add_argument(
-        "--audit-file",
-        required=True,
-        metavar="PATH",
-        help="Path to append audit JSONL records.",
+        "--audit-file", required=True, metavar="PATH", help="Path to append audit JSONL records."
     )
     audit_record_parser.add_argument(
-        "--source",
-        required=True,
-        metavar="PATH",
-        help="Path to Sentinel result artifact JSON.",
+        "--source", required=True, metavar="PATH", help="Path to Sentinel result artifact JSON."
     )
     audit_record_parser.add_argument(
-        "--events",
-        required=False,
-        metavar="PATH",
-        help="Optional path to monitor events JSONL file.",
+        "--events", required=False, metavar="PATH", help="Optional path to monitor events JSONL file."
     )
 
     audit_inspect_parser = audit_subparsers.add_parser("inspect", help="Inspect audit records.")
     audit_inspect_parser.add_argument(
-        "--audit-file",
-        required=True,
-        metavar="PATH",
-        help="Path to audit JSONL file.",
+        "--audit-file", required=True, metavar="PATH", help="Path to audit JSONL file."
     )
-    audit_inspect_parser.add_argument(
-        "--from",
-        dest="from_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive lower timestamp bound (ISO-8601 UTC).",
-    )
-    audit_inspect_parser.add_argument(
-        "--to",
-        dest="to_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive upper timestamp bound (ISO-8601 UTC).",
-    )
-    audit_inspect_parser.add_argument(
-        "--last",
-        type=int,
-        required=False,
-        metavar="N",
-        help="Return last N records after all other filters.",
-    )
-    audit_inspect_parser.add_argument(
-        "--command",
-        dest="filter_command",
-        required=False,
-        metavar="COMMAND",
-        help="Filter by command.",
-    )
-    audit_inspect_parser.add_argument(
-        "--provider",
-        required=False,
-        metavar="PROVIDER",
-        help="Filter by provider.",
-    )
-    audit_inspect_parser.add_argument(
-        "--model",
-        required=False,
-        metavar="MODEL",
-        help="Filter by model.",
-    )
-    audit_inspect_parser.add_argument(
-        "--event-type",
-        dest="inspect_event_type",
-        required=False,
-        metavar="TYPE",
-        help="Filter by event type.",
-    )
-    audit_inspect_parser.add_argument(
-        "--case-id",
-        required=False,
-        metavar="CASE_ID",
-        help="Filter by suite case id.",
-    )
-    audit_inspect_parser.add_argument(
-        "--status",
-        required=False,
-        metavar="STATUS",
-        help="Filter by status.",
-    )
-    audit_inspect_parser.add_argument(
-        "--audit-id",
-        required=False,
-        metavar="AUDIT_ID",
-        help="Filter by audit id.",
-    )
+    _add_filter_args(audit_inspect_parser, include_audit_id=True)
 
     audit_verify_parser = audit_subparsers.add_parser("verify", help="Verify audit record integrity.")
     audit_verify_parser.add_argument(
-        "--audit-file",
-        required=True,
-        metavar="PATH",
-        help="Path to audit JSONL file.",
+        "--audit-file", required=True, metavar="PATH", help="Path to audit JSONL file."
     )
-    audit_verify_parser.add_argument(
-        "--from",
-        dest="from_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive lower timestamp bound (ISO-8601 UTC).",
-    )
-    audit_verify_parser.add_argument(
-        "--to",
-        dest="to_timestamp_utc",
-        required=False,
-        metavar="TIMESTAMP",
-        help="Inclusive upper timestamp bound (ISO-8601 UTC).",
-    )
-    audit_verify_parser.add_argument(
-        "--last",
-        type=int,
-        required=False,
-        metavar="N",
-        help="Return last N records after all other filters.",
-    )
-    audit_verify_parser.add_argument(
-        "--command",
-        dest="filter_command",
-        required=False,
-        metavar="COMMAND",
-        help="Filter by command.",
-    )
-    audit_verify_parser.add_argument(
-        "--provider",
-        required=False,
-        metavar="PROVIDER",
-        help="Filter by provider.",
-    )
-    audit_verify_parser.add_argument(
-        "--model",
-        required=False,
-        metavar="MODEL",
-        help="Filter by model.",
-    )
-    audit_verify_parser.add_argument(
-        "--event-type",
-        dest="inspect_event_type",
-        required=False,
-        metavar="TYPE",
-        help="Filter by event type.",
-    )
-    audit_verify_parser.add_argument(
-        "--case-id",
-        required=False,
-        metavar="CASE_ID",
-        help="Filter by suite case id.",
-    )
-    audit_verify_parser.add_argument(
-        "--status",
-        required=False,
-        metavar="STATUS",
-        help="Filter by status.",
-    )
-    audit_verify_parser.add_argument(
-        "--audit-id",
-        required=False,
-        metavar="AUDIT_ID",
-        help="Filter by audit id.",
-    )
+    _add_filter_args(audit_verify_parser, include_audit_id=True)
 
     audit_replay_parser = audit_subparsers.add_parser("replay", help="Replay a single audit record.")
     audit_replay_parser.add_argument(
-        "--audit-file",
-        required=True,
-        metavar="PATH",
-        help="Path to audit JSONL file.",
+        "--audit-file", required=True, metavar="PATH", help="Path to audit JSONL file."
     )
-    audit_replay_parser.add_argument(
-        "--audit-id",
-        required=True,
-        metavar="AUDIT_ID",
-        help="Audit id to replay.",
-    )
+    audit_replay_parser.add_argument("--audit-id", required=True, metavar="AUDIT_ID", help="Audit id to replay.")
 
     return parser
 
 
+# ---------------------------------------------------------------------------
+# Command handlers
+# ---------------------------------------------------------------------------
+
 def _handle_run(args: argparse.Namespace) -> int:
-    """Handle the ``run`` subcommand."""
     result = run_contract(
         prompt_path=args.prompt,
         schema_path=args.schema,
@@ -652,7 +364,6 @@ def _handle_validate(args: argparse.Namespace) -> int:
 
 
 def _handle_test_run(args: argparse.Namespace) -> int:
-    # Import lazily to keep CLI import stable in minimal environments.
     from sentinel.core.errors import SentinelError
     from sentinel.testkit.suite_runner import run_suite
 
@@ -663,14 +374,12 @@ def _handle_test_run(args: argparse.Namespace) -> int:
         print(f"{suite_result.category} {suite_result.code} {suite_result.message}")
         return 2
 
-    # Summary-first output (always).
     summary = suite_result.summary
     print(
         "TEST SUMMARY "
         f"total={summary.total} pass={summary.pass_count} diff={summary.diff_count} error={summary.error_count}"
     )
 
-    # Print only non-PASS cases, in suite order.
     exit_code = 0
     for case in suite_result.cases:
         if case.status == "PASS":
@@ -692,7 +401,6 @@ def _handle_test_run(args: argparse.Namespace) -> int:
 
 
 def _handle_test_update(args: argparse.Namespace) -> int:
-    # Import lazily to keep CLI import stable in minimal environments.
     from sentinel.core.errors import SentinelError
     from sentinel.testkit.update_runner import run_update
 
@@ -758,7 +466,6 @@ def _handle_guard_check(args: argparse.Namespace) -> int:
 
 
 def _handle_drift_baseline(args: argparse.Namespace) -> int:
-    from sentinel.core.errors import SentinelError
     from sentinel.drift.output import render_drift_baseline
     from sentinel.drift.runner import run_drift_baseline
 
@@ -768,9 +475,7 @@ def _handle_drift_baseline(args: argparse.Namespace) -> int:
         baseline_path=args.output,
     )
     if isinstance(result, SentinelError):
-        print("DRIFT BASELINE ERROR")
-        print(f"{result.category} {result.code} {result.message}")
-        return 2
+        return _fail("DRIFT BASELINE", result)
 
     for line in render_drift_baseline(result):
         print(line)
@@ -778,7 +483,6 @@ def _handle_drift_baseline(args: argparse.Namespace) -> int:
 
 
 def _handle_drift_check(args: argparse.Namespace) -> int:
-    from sentinel.core.errors import SentinelError
     from sentinel.drift.output import render_drift_check
     from sentinel.drift.runner import run_drift_check
 
@@ -789,9 +493,7 @@ def _handle_drift_check(args: argparse.Namespace) -> int:
         baseline_path=args.baseline,
     )
     if isinstance(result, SentinelError):
-        print("DRIFT CHECK ERROR")
-        print(f"{result.category} {result.code} {result.message}")
-        return 2
+        return _fail("DRIFT CHECK", result)
 
     for line in render_drift_check(result):
         print(line)
@@ -805,33 +507,21 @@ def _handle_drift_check(args: argparse.Namespace) -> int:
 def _handle_monitor_record(args: argparse.Namespace) -> int:
     mapped = map_source_artifact_to_event(source_path=args.source, event_type=args.event_type)
     if isinstance(mapped, SentinelError):
-        print("MONITOR RECORD ERROR")
-        print(f"{mapped.category} {mapped.code} {mapped.message}")
-        return 2
+        return _fail("MONITOR RECORD", mapped)
 
     validation_err = validate_event(mapped)
     if validation_err is not None:
-        print("MONITOR RECORD ERROR")
-        print(f"{validation_err.category} {validation_err.code} {validation_err.message}")
-        return 2
+        return _fail("MONITOR RECORD", validation_err)
 
     append_err = append_event(args.event_file, mapped)
     if append_err is not None:
-        print("MONITOR RECORD ERROR")
-        print(f"{append_err.category} {append_err.code} {append_err.message}")
-        return 2
+        return _fail("MONITOR RECORD", append_err)
 
     return 0
 
 
-def _handle_monitor_inspect(args: argparse.Namespace) -> int:
-    loaded = read_events(args.event_file)
-    if isinstance(loaded, SentinelError):
-        print("MONITOR INSPECT ERROR")
-        print(f"{loaded.category} {loaded.code} {loaded.message}")
-        return 2
-
-    filters = InspectFilters(
+def _build_inspect_filters(args: argparse.Namespace) -> InspectFilters:
+    return InspectFilters(
         from_timestamp_utc=args.from_timestamp_utc,
         to_timestamp_utc=args.to_timestamp_utc,
         last=args.last,
@@ -842,11 +532,16 @@ def _handle_monitor_inspect(args: argparse.Namespace) -> int:
         case_id=args.case_id,
         status=args.status,
     )
-    selected = select_events(loaded, filters)
+
+
+def _handle_monitor_inspect(args: argparse.Namespace) -> int:
+    loaded = read_events(args.event_file)
+    if isinstance(loaded, SentinelError):
+        return _fail("MONITOR INSPECT", loaded)
+
+    selected = select_events(loaded, _build_inspect_filters(args))
     if isinstance(selected, SentinelError):
-        print("MONITOR INSPECT ERROR")
-        print(f"{selected.category} {selected.code} {selected.message}")
-        return 2
+        return _fail("MONITOR INSPECT", selected)
 
     for line in render_inspect_events(selected):
         print(line)
@@ -856,38 +551,19 @@ def _handle_monitor_inspect(args: argparse.Namespace) -> int:
 def _handle_monitor_summary(args: argparse.Namespace) -> int:
     loaded = read_events(args.event_file)
     if isinstance(loaded, SentinelError):
-        print("MONITOR SUMMARY ERROR")
-        print(f"{loaded.category} {loaded.code} {loaded.message}")
-        return 2
+        return _fail("MONITOR SUMMARY", loaded)
 
-    filters = InspectFilters(
-        from_timestamp_utc=args.from_timestamp_utc,
-        to_timestamp_utc=args.to_timestamp_utc,
-        last=args.last,
-        command=args.filter_command,
-        provider=args.provider,
-        model=args.model,
-        event_type=args.inspect_event_type,
-        case_id=args.case_id,
-        status=args.status,
-    )
-    selected = select_events(loaded, filters)
+    selected = select_events(loaded, _build_inspect_filters(args))
     if isinstance(selected, SentinelError):
-        print("MONITOR SUMMARY ERROR")
-        print(f"{selected.category} {selected.code} {selected.message}")
-        return 2
+        return _fail("MONITOR SUMMARY", selected)
 
     definitions = load_signal_definitions(args.signals)
     if isinstance(definitions, SentinelError):
-        print("MONITOR SUMMARY ERROR")
-        print(f"{definitions.category} {definitions.code} {definitions.message}")
-        return 2
+        return _fail("MONITOR SUMMARY", definitions)
 
     results = compute_signals(selected, definitions)
     if isinstance(results, SentinelError):
-        print("MONITOR SUMMARY ERROR")
-        print(f"{results.category} {results.code} {results.message}")
-        return 2
+        return _fail("MONITOR SUMMARY", results)
 
     for line in render_summary(len(selected), results):
         print(line)
@@ -897,45 +573,28 @@ def _handle_monitor_summary(args: argparse.Namespace) -> int:
 def _handle_monitor_check(args: argparse.Namespace) -> int:
     loaded = read_events(args.event_file)
     if isinstance(loaded, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{loaded.category} {loaded.code} {loaded.message}")
-        return 2
-    filters = InspectFilters(
-        from_timestamp_utc=args.from_timestamp_utc,
-        to_timestamp_utc=args.to_timestamp_utc,
-        last=args.last,
-        command=args.filter_command,
-        provider=args.provider,
-        model=args.model,
-        event_type=args.inspect_event_type,
-        case_id=args.case_id,
-        status=args.status,
-    )
-    selected = select_events(loaded, filters)
+        return _fail("MONITOR CHECK", loaded)
+
+    selected = select_events(loaded, _build_inspect_filters(args))
     if isinstance(selected, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{selected.category} {selected.code} {selected.message}")
-        return 2
+        return _fail("MONITOR CHECK", selected)
+
     signal_defs = load_signal_definitions(args.signals)
     if isinstance(signal_defs, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{signal_defs.category} {signal_defs.code} {signal_defs.message}")
-        return 2
+        return _fail("MONITOR CHECK", signal_defs)
+
     signal_results = compute_signals(selected, signal_defs)
     if isinstance(signal_results, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{signal_results.category} {signal_results.code} {signal_results.message}")
-        return 2
+        return _fail("MONITOR CHECK", signal_results)
+
     rule_defs = load_rule_definitions(args.rules)
     if isinstance(rule_defs, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{rule_defs.category} {rule_defs.code} {rule_defs.message}")
-        return 2
+        return _fail("MONITOR CHECK", rule_defs)
+
     evaluated = evaluate_rules(selected, signal_defs, signal_results, rule_defs)
     if isinstance(evaluated, SentinelError):
-        print("MONITOR CHECK ERROR")
-        print(f"{evaluated.category} {evaluated.code} {evaluated.message}")
-        return 2
+        return _fail("MONITOR CHECK", evaluated)
+
     for line in render_check(evaluated):
         print(line)
     if evaluated.summary["error"] > 0:
@@ -969,79 +628,67 @@ def _handle_audit_record(args: argparse.Namespace) -> tuple[int, list[str]]:
 
 
 def _handle_audit_inspect(args: argparse.Namespace) -> tuple[int, list[str]]:
-    filters = _build_audit_filters(args)
-    return run_audit_inspect(args.audit_file, filters)
-
+    return run_audit_inspect(args.audit_file, _build_audit_filters(args))
 
 def _handle_audit_verify(args: argparse.Namespace) -> tuple[int, list[str]]:
-    filters = _build_audit_filters(args)
-    return run_audit_verify(args.audit_file, filters)
+    return run_audit_verify(args.audit_file, _build_audit_filters(args))
 
 
 def _handle_audit_replay(args: argparse.Namespace) -> tuple[int, list[str]]:
     return run_audit_replay(args.audit_file, args.audit_id)
 
 
+# ---------------------------------------------------------------------------
+# Dispatch table
+# ---------------------------------------------------------------------------
+
+_SIMPLE_DISPATCH: dict[tuple[str, ...], object] = {
+    ("run",): _handle_run,
+    ("validate",): _handle_validate,
+    ("test", "run"): _handle_test_run,
+    ("test", "update"): _handle_test_update,
+    ("guard", "check"): _handle_guard_check,
+    ("drift", "baseline"): _handle_drift_baseline,
+    ("drift", "check"): _handle_drift_check,
+    ("monitor", "record"): _handle_monitor_record,
+    ("monitor", "inspect"): _handle_monitor_inspect,
+    ("monitor", "summary"): _handle_monitor_summary,
+    ("monitor", "check"): _handle_monitor_check,
+}
+
+_AUDIT_DISPATCH: dict[str, object] = {
+    "record": _handle_audit_record,
+    "inspect": _handle_audit_inspect,
+    "verify": _handle_audit_verify,
+    "replay": _handle_audit_replay,
+}
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
 def main(argv: list[str] | None = None) -> int:
-    """Run the Sentinel CLI.
-
-    Parameters
-    ----------
-    argv:
-        Optional argument vector.  When *None*, ``sys.argv[1:]`` is used.
-
-    Returns
-    -------
-    int
-        Exit code (0 = success, non-zero = error).
-    """
+    """Run the Sentinel CLI."""
     parser = _build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "run":
-        return _handle_run(args)
-    if args.command == "validate":
-        return _handle_validate(args)
+    cmd = args.command
 
-    if args.command == "test" and args.test_command == "run":
-        return _handle_test_run(args)
-    if args.command == "test" and args.test_command == "update":
-        return _handle_test_update(args)
-    if args.command == "guard" and args.guard_command == "check":
-        return _handle_guard_check(args)
-    if args.command == "drift" and args.drift_command == "baseline":
-        return _handle_drift_baseline(args)
-    if args.command == "drift" and args.drift_command == "check":
-        return _handle_drift_check(args)
-    if args.command == "monitor" and args.monitor_command == "record":
-        return _handle_monitor_record(args)
-    if args.command == "monitor" and args.monitor_command == "inspect":
-        return _handle_monitor_inspect(args)
-    if args.command == "monitor" and args.monitor_command == "summary":
-        return _handle_monitor_summary(args)
-    if args.command == "monitor" and args.monitor_command == "check":
-        return _handle_monitor_check(args)
-
-    if args.command == "audit" and args.audit_command == "record":
-        code, lines = _handle_audit_record(args)
-        for line in lines:
-            print(line)
-        return code
-    if args.command == "audit" and args.audit_command == "inspect":
-        code, lines = _handle_audit_inspect(args)
-        for line in lines:
-            print(line)
-        return code
-    if args.command == "audit" and args.audit_command == "verify":
-        code, lines = _handle_audit_verify(args)
-        for line in lines:
-            print(line)
-        return code
-    if args.command == "audit" and args.audit_command == "replay":
-        code, lines = _handle_audit_replay(args)
-        for line in lines:
-            print(line)
-        return code
+    if cmd == "audit":
+        audit_cmd = args.audit_command
+        handler = _AUDIT_DISPATCH.get(audit_cmd)
+        if handler is not None:
+            code, lines = handler(args)  # type: ignore[call-arg]
+            for line in lines:
+                print(line)
+            return code
+    else:
+        sub = getattr(args, f"{cmd}_command", None) if cmd else None
+        key = (cmd, sub) if sub is not None else (cmd,)
+        handler = _SIMPLE_DISPATCH.get(key)  # type: ignore[assignment]
+        if handler is not None:
+            return handler(args)  # type: ignore[call-arg]
 
     # No subcommand given – print help and exit 0.
     parser.print_help()
