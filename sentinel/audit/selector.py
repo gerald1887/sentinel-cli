@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+from sentinel.core.errors import SCHEMA_INVALID, SentinelError
+
 from .types import AuditRecord
 
 
@@ -20,7 +22,47 @@ class SelectionFilters:
     last: int | None = None
 
 
-def apply_filters(records: Iterable[AuditRecord], filters: SelectionFilters) -> list[AuditRecord]:
+def validate_selection_filters(filters: SelectionFilters) -> SentinelError | None:
+    """Validate audit selection filter values.
+
+    Mirrors the monitor selector's validation: ISO-8601 UTC timestamps,
+    from <= to ordering, and last >= 1.
+    """
+    for label, value in (
+        ("from", filters.from_ts),
+        ("to", filters.to_ts),
+    ):
+        if value is None:
+            continue
+        if not _is_iso8601_utc(value):
+            return SentinelError(
+                category=SCHEMA_INVALID,
+                code="SENTINEL_AUDIT_INVALID_FILTER",
+                message=f"Filter '--{label}' must be ISO-8601 UTC format ending with 'Z'.",
+            )
+
+    if filters.from_ts is not None and filters.to_ts is not None:
+        if filters.from_ts > filters.to_ts:
+            return SentinelError(
+                category=SCHEMA_INVALID,
+                code="SENTINEL_AUDIT_INVALID_FILTER",
+                message="Filter '--from' must be less than or equal to '--to'.",
+            )
+
+    if filters.last is not None and filters.last < 1:
+        return SentinelError(
+            category=SCHEMA_INVALID,
+            code="SENTINEL_AUDIT_INVALID_FILTER",
+            message="Filter '--last' must be >= 1.",
+        )
+    return None
+
+
+def apply_filters(records: Iterable[AuditRecord], filters: SelectionFilters) -> list[AuditRecord] | SentinelError:
+    filter_error = validate_selection_filters(filters)
+    if filter_error is not None:
+        return filter_error
+
     # Preserve file order; no sorting.
     selected: list[AuditRecord] = list(records)
 
@@ -85,3 +127,8 @@ def apply_filters(records: Iterable[AuditRecord], filters: SelectionFilters) -> 
 
     return selected
 
+
+def _is_iso8601_utc(value: str) -> bool:
+    if len(value) < 20:
+        return False
+    return "T" in value and value.endswith("Z")
