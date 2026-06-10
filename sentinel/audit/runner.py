@@ -71,6 +71,11 @@ def run_audit_inspect(audit_file: str, filters: SelectionFilters) -> tuple[int, 
         ]
 
     selected = apply_filters(loaded, filters)
+    if isinstance(selected, SentinelError):
+        return EXIT_ERROR, [
+            "AUDIT INSPECT ERROR",
+            f"{selected.category} {selected.code} {selected.message}",
+        ]
     # Deterministic JSON output per record.
     lines = [json_dumps(asdict(record)) for record in selected]
     return EXIT_PASS, lines
@@ -85,6 +90,11 @@ def run_audit_verify(audit_file: str, filters: SelectionFilters) -> tuple[int, l
         ]
 
     selected = apply_filters(loaded, filters)
+    if isinstance(selected, SentinelError):
+        return EXIT_ERROR, [
+            "AUDIT VERIFY ERROR",
+            f"{selected.category} {selected.code} {selected.message}",
+        ]
     verify_result = verify_records(selected)
     lines = render_verify(verify_result)
 
