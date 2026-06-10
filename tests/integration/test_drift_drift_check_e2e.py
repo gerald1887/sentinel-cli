@@ -154,7 +154,7 @@ def test_drift_check_fail_and_deterministic_output_ordering(tmp_path: Path, monk
     assert out == (
         "DRIFT SUMMARY total_metrics=3 pass=1 fail=2 error=0 cases=3 approved=3\n"
         "METRIC FAIL numeric /score m_numeric.max baseline=3.0 current=4.0 delta=1.0 threshold=0.1\n"
-        "METRIC FAIL numeric /score m_numeric.mean baseline=2.0 current=2.3333333333333335 delta=0.3333333333333335 threshold=0.1\n"
+        "METRIC FAIL numeric /score m_numeric.mean baseline=2.0 current=2.3333333333333335 delta=0.3333333333333335 threshold=0.1\n"  # noqa: E501
     )
 
 

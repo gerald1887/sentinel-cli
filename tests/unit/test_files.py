@@ -26,7 +26,6 @@ from sentinel.core.errors import (
 )
 from sentinel.core.files import load_prompt, load_schema
 
-
 # ---------------------------------------------------------------------------
 # load_prompt
 # ---------------------------------------------------------------------------

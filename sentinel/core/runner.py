@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 from sentinel.core.errors import INTERNAL_ERROR, JSON_PARSE_ERROR, SentinelError
 from sentinel.core.files import load_prompt, load_schema
@@ -16,7 +16,7 @@ from sentinel.providers.base import ProviderRequest
 @dataclass(frozen=True, slots=True)
 class RunResult:
     status: Literal["PASS", "FAIL", "ERROR"]
-    error: Optional[SentinelError] = None
+    error: SentinelError | None = None
     approved_output: object | None = None
 
 

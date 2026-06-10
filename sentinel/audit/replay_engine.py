@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from sentinel.core.errors import INTERNAL_ERROR, SentinelError
 from sentinel.core.runner import RunResult, run_contract

@@ -20,8 +20,12 @@ def _threshold_value(details: dict[str, object] | None) -> str:
     return "-"
 
 
-def _comparison_lookup(result: DriftCheckRunResult) -> dict[tuple[str, str, str, str | None], tuple[float | None, float | None, float | None]]:
-    out: dict[tuple[str, str, str, str | None], tuple[float | None, float | None, float | None]] = {}
+_ComparisonKey = tuple[str, str, str, str | None]
+_ComparisonValue = tuple[float | None, float | None, float | None]
+
+
+def _comparison_lookup(result: DriftCheckRunResult) -> dict[_ComparisonKey, _ComparisonValue]:
+    out: dict[_ComparisonKey, _ComparisonValue] = {}
     for item in result.comparisons:
         out[(item.family.value, item.path, item.metric_id, item.key)] = (
             item.baseline_value,

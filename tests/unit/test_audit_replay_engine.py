@@ -4,14 +4,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
-
 from sentinel.audit.builder import build_audit_record_from_result
 from sentinel.audit.hashing import _hash_normalized
 from sentinel.audit.replay_engine import replay_record
 from sentinel.audit.types import AuditConfigs, AuditHashes, AuditInputRefs, AuditRecord
 from sentinel.core.runner import RunResult
-
 
 # ---------------------------------------------------------------------------
 # Helpers

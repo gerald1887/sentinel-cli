@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Iterable, List
+from collections.abc import Iterable
 
-from .types import AuditReplayResult, AuditVerifyRecordResult, AuditVerifyResult
+from .types import AuditReplayResult, AuditVerifyResult
 
 
-def render_verify(result: AuditVerifyResult) -> List[str]:
-    lines: List[str] = [
+def render_verify(result: AuditVerifyResult) -> list[str]:
+    lines: list[str] = [
         "AUDIT VERIFY SUMMARY "
         f"total_records={result.summary.total_records} "
         f"valid={result.summary.valid} invalid={result.summary.invalid}"
@@ -20,14 +20,14 @@ def render_verify(result: AuditVerifyResult) -> List[str]:
     return lines
 
 
-def render_replay(results: Iterable[AuditReplayResult]) -> List[str]:
+def render_replay(results: Iterable[AuditReplayResult]) -> list[str]:
     results_list = list(results)
     total = len(results_list)
     passed = sum(1 for r in results_list if r.status == "PASS")
     failed = sum(1 for r in results_list if r.status == "FAIL")
     errors = sum(1 for r in results_list if r.status == "ERROR")
 
-    lines: List[str] = [
+    lines: list[str] = [
         f"AUDIT REPLAY SUMMARY total={total} pass={passed} fail={failed} error={errors}",
     ]
     for r in results_list:

@@ -31,7 +31,7 @@ RATE_VALUE_DENOMINATOR_KEY = "denominator"
 def load_signal_definitions(path: str) -> list[SignalDefinition] | SentinelError:
     """Load and strictly validate configured signal definitions."""
     try:
-        with open(path, "r", encoding="utf-8") as config_file:
+        with open(path, encoding="utf-8") as config_file:
             if path.endswith(".json"):
                 raw = json.load(config_file)
             elif path.endswith((".yaml", ".yml")):
@@ -238,7 +238,9 @@ def canonical_rate_value(numerator: int, denominator: int) -> dict[str, int]:
     }
 
 
-def _compute_numeric(events: list[Event], definition: SignalDefinition, family: str) -> int | float | None | SentinelError:
+def _compute_numeric(
+    events: list[Event], definition: SignalDefinition, family: str
+) -> int | float | None | SentinelError:
     field = definition.options.get("field")
     op = definition.options.get("op")
     if not isinstance(field, str):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from sentinel.core.errors import SCHEMA_INVALID, SentinelError
 from sentinel.drift.types import MetricDefinition, MetricFamily, MetricResultRecord, MetricsConfig
@@ -139,7 +138,9 @@ def _resolve_required_values(
     return values
 
 
-def _compute_presence(metric: MetricDefinition, approved_outputs: list[object]) -> list[MetricResultRecord] | SentinelError:
+def _compute_presence(
+    metric: MetricDefinition, approved_outputs: list[object]
+) -> list[MetricResultRecord] | SentinelError:
     if len(approved_outputs) == 0:
         return [
             MetricResultRecord(
@@ -291,7 +292,9 @@ def _compute_scalar_distributions(
     return records
 
 
-def _compute_numeric(metric: MetricDefinition, approved_outputs: list[object]) -> list[MetricResultRecord] | SentinelError:
+def _compute_numeric(
+    metric: MetricDefinition, approved_outputs: list[object]
+) -> list[MetricResultRecord] | SentinelError:
     values = _resolve_required_values(metric, approved_outputs)
     if isinstance(values, SentinelError):
         return values

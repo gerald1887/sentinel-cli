@@ -20,7 +20,6 @@ from sentinel.core.errors import (
 )
 from sentinel.core.schema import validate_instance, validate_schema_structure
 
-
 # ---------------------------------------------------------------------------
 # validate_schema_structure
 # ---------------------------------------------------------------------------

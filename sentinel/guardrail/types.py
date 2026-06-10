@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, TypedDict
 
-
 GuardCheckSummary = TypedDict(
     "GuardCheckSummary",
     {"total": int, "pass": int, "fail": int, "error": int},

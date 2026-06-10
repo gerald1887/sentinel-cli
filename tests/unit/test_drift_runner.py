@@ -101,9 +101,9 @@ def test_run_drift_check_happy_path(monkeypatch) -> None:  # type: ignore[no-unt
             version="1.0",
             suite="suite.yaml",
             metrics=[
-                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="max", value=3.0),
-                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="mean", value=2.0),
-                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="min", value=1.0),
+                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="max", value=3.0),  # noqa: E501
+                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="mean", value=2.0),  # noqa: E501
+                MetricResultRecord(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score", key="min", value=1.0),  # noqa: E501
             ],
         ),
     )
@@ -140,7 +140,7 @@ def test_error_precedence_over_fail(monkeypatch) -> None:  # type: ignore[no-unt
             global_rule=None,
         ),
     )
-    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))
+    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))  # noqa: E501
     monkeypatch.setattr(runner, "load_suite", lambda _: _suite())
     monkeypatch.setattr(runner, "execute_case", lambda _: {"score": 1})
     monkeypatch.setattr(
@@ -217,7 +217,7 @@ def test_fail_when_breach_and_no_error(monkeypatch) -> None:  # type: ignore[no-
             global_rule=None,
         ),
     )
-    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))
+    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))  # noqa: E501
     monkeypatch.setattr(runner, "load_suite", lambda _: _suite())
     monkeypatch.setattr(runner, "execute_case", lambda _: {"score": 1})
     monkeypatch.setattr(
@@ -264,7 +264,7 @@ def test_pass_when_all_metrics_pass(monkeypatch) -> None:  # type: ignore[no-unt
             global_rule=None,
         ),
     )
-    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))
+    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))  # noqa: E501
     monkeypatch.setattr(runner, "load_suite", lambda _: _suite())
     monkeypatch.setattr(runner, "execute_case", lambda _: {"score": 1})
     monkeypatch.setattr(
@@ -412,7 +412,7 @@ def test_deterministic_ordering_of_aggregated_results(monkeypatch) -> None:  # t
             global_rule=None,
         ),
     )
-    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))
+    monkeypatch.setattr(runner, "read_baseline", lambda _: BaselineEnvelope(version="1.0", suite="suite.yaml", metrics=[]))  # noqa: E501
     monkeypatch.setattr(runner, "load_suite", lambda _: _suite())
     monkeypatch.setattr(runner, "execute_case", lambda _: {"score": 1})
     monkeypatch.setattr(
@@ -490,7 +490,7 @@ def test_threshold_runtime_type_mismatch_returns_error(monkeypatch) -> None:  # 
     monkeypatch.setattr(
         runner,
         "load_metrics_config",
-        lambda _: MetricsConfig(metrics=[MetricDefinition(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score")]),
+        lambda _: MetricsConfig(metrics=[MetricDefinition(metric_id="m_numeric", family=MetricFamily.NUMERIC, path="/score")]),  # noqa: E501
     )
     monkeypatch.setattr(
         runner,

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List
-
 from .hashing import HashingError, recompute_hashes_for_record
 from .types import AuditRecord, AuditVerifyRecordResult, AuditVerifyResult, AuditVerifyResultSummary
 
@@ -10,11 +8,11 @@ class VerifyError(Exception):
     pass
 
 
-def verify_records(records: List[AuditRecord]) -> AuditVerifyResult:
+def verify_records(records: list[AuditRecord]) -> AuditVerifyResult:
     total = len(records)
     valid = 0
     invalid = 0
-    results: List[AuditVerifyRecordResult] = []
+    results: list[AuditVerifyRecordResult] = []
 
     for record in records:
         try:

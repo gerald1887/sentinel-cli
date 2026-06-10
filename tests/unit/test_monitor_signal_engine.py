@@ -118,14 +118,14 @@ def test_null_handling_per_type_verified() -> None:
                 {"name": "rate_status", "type": "rate", "options": {"field": "provider", "equals": "openai"}},
                 {"name": "token_sum", "type": "token", "options": {"field": "total_tokens", "op": "sum"}},
                 {"name": "cat_default", "type": "categorical", "options": {"field": "provider"}},
-                {"name": "cat_with_null", "type": "categorical", "options": {"field": "provider", "include_null": True}},
+                {"name": "cat_with_null", "type": "categorical", "options": {"field": "provider", "include_null": True}},  # noqa: E501
             ]
         }
     )
     assert isinstance(loaded, list)
     result = compute_signals(events, loaded)
     assert isinstance(result, list)
-    assert [r.value for r in result] == [1, {"denominator": 1, "numerator": 1}, 100, {"openai": 1}, {"null": 1, "openai": 1}]
+    assert [r.value for r in result] == [1, {"denominator": 1, "numerator": 1}, 100, {"openai": 1}, {"null": 1, "openai": 1}]  # noqa: E501
 
 
 def test_no_implicit_signals_computed() -> None:

@@ -37,7 +37,7 @@ def test_packaging_reproducible_install(tmp_path: Path) -> None:
     input_path = tmp_path / "input.json"
     schema_path = tmp_path / "schema.json"
     input_path.write_text('{"ok": true}\n', encoding="utf-8")
-    schema_path.write_text('{"type":"object","required":["ok"],"properties":{"ok":{"type":"boolean"}}}\n', encoding="utf-8")
+    schema_path.write_text('{"type":"object","required":["ok"],"properties":{"ok":{"type":"boolean"}}}\n', encoding="utf-8")  # noqa: E501
 
     validate_proc = subprocess.run(
         [

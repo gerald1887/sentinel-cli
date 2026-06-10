@@ -33,7 +33,7 @@ def append_event(event_file: str, event: Event) -> SentinelError | None:
 def read_events(event_file: str) -> list[Event] | SentinelError:
     """Read events from JSONL in deterministic order."""
     try:
-        with open(event_file, "r", encoding="utf-8") as in_file:
+        with open(event_file, encoding="utf-8") as in_file:
             lines = in_file.readlines()
     except Exception as exc:  # noqa: BLE001
         return SentinelError(

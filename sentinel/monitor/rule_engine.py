@@ -29,7 +29,7 @@ ALLOWED_SCOPE_KEYS = {
 def load_rule_definitions(path: str) -> list[RuleDefinition] | SentinelError:
     """Load rules config with strict deterministic validation."""
     try:
-        with open(path, "r", encoding="utf-8") as config_file:
+        with open(path, encoding="utf-8") as config_file:
             if path.endswith(".json"):
                 raw = json.load(config_file)
             elif path.endswith((".yaml", ".yml")):

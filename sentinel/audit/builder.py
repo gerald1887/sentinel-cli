@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sentinel.core.errors import SentinelError
 from sentinel.monitor.event_store import read_events
@@ -17,7 +17,7 @@ class AuditBuilderError(Exception):
     pass
 
 
-def _load_json_file(path: Optional[str]) -> Optional[Dict[str, Any]]:
+def _load_json_file(path: str | None) -> dict[str, Any] | None:
     if path is None:
         return None
     try:
@@ -29,7 +29,7 @@ def _load_json_file(path: Optional[str]) -> Optional[Dict[str, Any]]:
         raise AuditBuilderError(f"invalid JSON config file: {path}") from exc
 
 
-def _load_result_artifact(path: str) -> Dict[str, Any]:
+def _load_result_artifact(path: str) -> dict[str, Any]:
     try:
         text = Path(path).read_text(encoding="utf-8")
         obj = json.loads(text)
@@ -42,14 +42,14 @@ def _load_result_artifact(path: str) -> Dict[str, Any]:
     return obj
 
 
-def _load_event_ids(events_path: Optional[str]) -> List[str]:
+def _load_event_ids(events_path: str | None) -> list[str]:
     if events_path is None:
         return []
     events = read_events(events_path)
     if isinstance(events, SentinelError):
         raise AuditBuilderError("failed to load events file")
     # Preserve file-order lineage.
-    event_ids: List[str] = [event.event_id for event in events]
+    event_ids: list[str] = [event.event_id for event in events]
     if not event_ids:
         # Explicit events argument but no linkage is an error.
         raise AuditBuilderError("no events found in provided events file")
@@ -61,13 +61,13 @@ def build_audit_record_from_result(
     command: str | None,
     execution_id: str | None,
     result_path: str,
-    prompt_file: Optional[str],
-    schema_file: Optional[str],
-    suite_file: Optional[str],
-    assertions_file: Optional[str],
-    signals_file: Optional[str],
-    rules_file: Optional[str],
-    events_file: Optional[str],
+    prompt_file: str | None,
+    schema_file: str | None,
+    suite_file: str | None,
+    assertions_file: str | None,
+    signals_file: str | None,
+    rules_file: str | None,
+    events_file: str | None,
 ) -> AuditRecord:
     result_obj = _load_result_artifact(result_path)
     source_command = result_obj.get("command")
@@ -102,10 +102,10 @@ def build_audit_record_from_result(
 
     event_ids = _load_event_ids(events_file)
 
-    base_record: Dict[str, Any] = {
+    base_record: dict[str, Any] = {
         "audit_version": "1",
         "audit_id": str(uuid.uuid4()),
-        "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "timestamp_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "command": resolved_command,
         "execution_id": resolved_execution_id,
         "input_refs": {

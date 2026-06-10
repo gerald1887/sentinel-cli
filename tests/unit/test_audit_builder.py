@@ -21,7 +21,10 @@ def test_builder_loads_result_and_embeds_configs_and_events(tmp_path: Path) -> N
     _write_json(result_path, {"command": "run", "execution_id": "exec-1", "status": "PASS"})
     _write_json(schema_path, {"type": "object"})
     _write_json(assertions_path, {"assertions": []})
-    events_path.write_text('{"event_version":"1.0","event_id":"e1","event_type":"t","timestamp_utc":"2026-01-01T00:00:00Z","command":"c","provider":null,"model":null,"suite_case_id":null,"status":"PASS","exit_code":0,"duration_ms":1,"contract_status":null,"guard_status":null,"drift_status":null,"error_category":null,"error_code":null,"refusal_detected":null,"input_tokens":null,"output_tokens":null,"total_tokens":null,"artifact_refs":{"source":"s"},"metadata":null}\n', encoding="utf-8")
+    events_path.write_text(  # noqa: E501
+        '{"event_version":"1.0","event_id":"e1","event_type":"t","timestamp_utc":"2026-01-01T00:00:00Z","command":"c","provider":null,"model":null,"suite_case_id":null,"status":"PASS","exit_code":0,"duration_ms":1,"contract_status":null,"guard_status":null,"drift_status":null,"error_category":null,"error_code":null,"refusal_detected":null,"input_tokens":null,"output_tokens":null,"total_tokens":null,"artifact_refs":{"source":"s"},"metadata":null}\n',
+        encoding="utf-8",
+    )
 
     record = build_audit_record_from_result(
         command="audit record",

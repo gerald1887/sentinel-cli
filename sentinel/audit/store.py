@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import io
 import json
+from collections.abc import Iterable, Iterator
 from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable, Iterator, TextIO
+from typing import TextIO
 
 from .types import AuditRecord
 

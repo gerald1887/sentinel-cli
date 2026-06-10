@@ -13,7 +13,7 @@ from sentinel.monitor.types import EVENT_VERSION, Event
 def map_source_artifact_to_event(source_path: str, event_type: str) -> Event | SentinelError:
     """Load and map a source artifact into a strict Event."""
     try:
-        with open(source_path, "r", encoding="utf-8") as source_file:
+        with open(source_path, encoding="utf-8") as source_file:
             artifact = json.load(source_file)
     except Exception as exc:  # noqa: BLE001
         return SentinelError(
