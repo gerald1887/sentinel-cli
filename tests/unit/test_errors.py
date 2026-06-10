@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from sentinel.core.errors import (
     EXIT_CONTRACT_FAIL,
-    EXIT_DRIFT_DETECTED,
     EXIT_ERROR,
     EXIT_PASS,
     FILE_NOT_FOUND,
@@ -29,7 +28,7 @@ from sentinel.core.errors import (
 
 # REQ-F-014 / REQ-F-015 / REQ-CLI-003 / REQ-F-013
 class TestExitCodes:
-    """Exit-code constants include 0–3 for pass, contract fail, error, drift (reserved)."""
+    """Exit-code constants cover 0 (pass), 1 (fail), and 2 (error)."""
 
     def test_exit_pass_is_zero(self) -> None:
         # REQ-CLI-003 / REQ-F-013 (exit code 0 constant exists)
@@ -43,11 +42,8 @@ class TestExitCodes:
         # REQ-F-015 (execution/system error exit code)
         assert EXIT_ERROR == 2
 
-    def test_exit_drift_detected_is_three(self) -> None:
-        assert EXIT_DRIFT_DETECTED == 3
-
     def test_exit_codes_are_distinct(self) -> None:
-        assert len({EXIT_PASS, EXIT_CONTRACT_FAIL, EXIT_ERROR, EXIT_DRIFT_DETECTED}) == 4
+        assert len({EXIT_PASS, EXIT_CONTRACT_FAIL, EXIT_ERROR}) == 3
 
 
 # REQ-F-010
