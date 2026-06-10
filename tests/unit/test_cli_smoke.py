@@ -78,7 +78,9 @@ class TestRunSubcommandParsing:
         assert exit_code == 1
         assert "FAIL: Contract violated" in captured.out
 
-    def test_run_error_maps_to_exit_2(self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_run_error_maps_to_exit_2(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         # REQ-CLI-004 (ERROR maps to exit 2 and error output)
         monkeypatch.setattr(
             "sentinel.cli.run_contract",
@@ -173,7 +175,9 @@ class TestRegressionTestRunCli:
         fake_module = types.SimpleNamespace(run_suite=run_suite_impl)
         monkeypatch.setitem(sys.modules, "sentinel.testkit.suite_runner", fake_module)
 
-    def test_test_run_suite_level_error_exit_2(self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_test_run_suite_level_error_exit_2(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         err = SentinelError(category="SCHEMA_INVALID", code="SENTINEL_SUITE_INVALID_YAML", message="bad yaml")
         self._install_fake_suite_runner(monkeypatch, lambda suite_path: err)
 
@@ -271,7 +275,9 @@ class TestRegressionTestUpdateCli:
         fake_module = types.SimpleNamespace(run_update=run_update_impl)
         monkeypatch.setitem(sys.modules, "sentinel.testkit.update_runner", fake_module)
 
-    def test_test_update_suite_level_error_exit_2(self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_test_update_suite_level_error_exit_2(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         err = SentinelError(category="SCHEMA_INVALID", code="SENTINEL_SUITE_INVALID_YAML", message="bad yaml")
         self._install_fake_update_runner(monkeypatch, lambda suite_path: err)
 

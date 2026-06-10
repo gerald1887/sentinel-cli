@@ -4,10 +4,19 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
+
 import yaml
 
 from sentinel import __version__
+from sentinel.audit.runner import (
+    SelectionFilters as AuditSelectionFilters,
+)
+from sentinel.audit.runner import (
+    run_audit_inspect,
+    run_audit_record,
+    run_audit_replay,
+    run_audit_verify,
+)
 from sentinel.core.errors import JSON_PARSE_ERROR, SentinelError, file_not_found, render_error
 from sentinel.core.files import load_schema
 from sentinel.core.runner import run_contract
@@ -27,13 +36,6 @@ from sentinel.monitor import (
 )
 from sentinel.monitor.output import render_check
 from sentinel.monitor.rule_engine import evaluate_rules, load_rule_definitions
-from sentinel.audit.runner import (
-    SelectionFilters as AuditSelectionFilters,
-    run_audit_inspect,
-    run_audit_record,
-    run_audit_replay,
-    run_audit_verify,
-)
 
 
 def _print_guard_summary(summary: dict[str, int]) -> None:
@@ -321,7 +323,9 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help="Return last N events after all other filters.",
     )
-    monitor_summary_parser.add_argument("--command", dest="filter_command", required=False, metavar="COMMAND", help="Filter by command.")
+    monitor_summary_parser.add_argument(
+        "--command", dest="filter_command", required=False, metavar="COMMAND", help="Filter by command."
+    )
     monitor_summary_parser.add_argument("--provider", required=False, metavar="PROVIDER", help="Filter by provider.")
     monitor_summary_parser.add_argument("--model", required=False, metavar="MODEL", help="Filter by model.")
     monitor_summary_parser.add_argument(
@@ -547,7 +551,7 @@ def _handle_run(args: argparse.Namespace) -> int:
     if result.status == "PASS":
         if args.assertions:
             try:
-                with open(args.assertions, "r", encoding="utf-8") as assertions_file:
+                with open(args.assertions, encoding="utf-8") as assertions_file:
                     assertions_data = yaml.safe_load(assertions_file)
                 assertions = assertions_data["assertions"]
                 guard_result = evaluate_assertions(result.approved_output, assertions)
@@ -589,7 +593,7 @@ def _handle_run(args: argparse.Namespace) -> int:
 
 def _handle_validate(args: argparse.Namespace) -> int:
     try:
-        with open(args.input, "r", encoding="utf-8") as input_file:
+        with open(args.input, encoding="utf-8") as input_file:
             raw_input = input_file.read()
     except FileNotFoundError:
         print("ERROR: Execution failed")
@@ -649,8 +653,8 @@ def _handle_validate(args: argparse.Namespace) -> int:
 
 def _handle_test_run(args: argparse.Namespace) -> int:
     # Import lazily to keep CLI import stable in minimal environments.
-    from sentinel.testkit.suite_runner import run_suite  # noqa: WPS433
-    from sentinel.core.errors import SentinelError  # noqa: WPS433
+    from sentinel.core.errors import SentinelError
+    from sentinel.testkit.suite_runner import run_suite
 
     suite_result = run_suite(args.suite)
 
@@ -689,8 +693,8 @@ def _handle_test_run(args: argparse.Namespace) -> int:
 
 def _handle_test_update(args: argparse.Namespace) -> int:
     # Import lazily to keep CLI import stable in minimal environments.
-    from sentinel.testkit.update_runner import run_update  # noqa: WPS433
-    from sentinel.core.errors import SentinelError  # noqa: WPS433
+    from sentinel.core.errors import SentinelError
+    from sentinel.testkit.update_runner import run_update
 
     update_result = run_update(args.suite)
 
@@ -721,9 +725,9 @@ def _handle_test_update(args: argparse.Namespace) -> int:
 
 def _handle_guard_check(args: argparse.Namespace) -> int:
     try:
-        with open(args.input, "r", encoding="utf-8") as input_file:
+        with open(args.input, encoding="utf-8") as input_file:
             input_json = json.load(input_file)
-        with open(args.assertions, "r", encoding="utf-8") as assertions_file:
+        with open(args.assertions, encoding="utf-8") as assertions_file:
             assertions_data = yaml.safe_load(assertions_file)
         assertions = assertions_data["assertions"]
     except Exception:
@@ -754,9 +758,9 @@ def _handle_guard_check(args: argparse.Namespace) -> int:
 
 
 def _handle_drift_baseline(args: argparse.Namespace) -> int:
-    from sentinel.core.errors import SentinelError  # noqa: WPS433
-    from sentinel.drift.output import render_drift_baseline  # noqa: WPS433
-    from sentinel.drift.runner import run_drift_baseline  # noqa: WPS433
+    from sentinel.core.errors import SentinelError
+    from sentinel.drift.output import render_drift_baseline
+    from sentinel.drift.runner import run_drift_baseline
 
     result = run_drift_baseline(
         suite_path=args.suite,
@@ -774,9 +778,9 @@ def _handle_drift_baseline(args: argparse.Namespace) -> int:
 
 
 def _handle_drift_check(args: argparse.Namespace) -> int:
-    from sentinel.core.errors import SentinelError  # noqa: WPS433
-    from sentinel.drift.output import render_drift_check  # noqa: WPS433
-    from sentinel.drift.runner import run_drift_check  # noqa: WPS433
+    from sentinel.core.errors import SentinelError
+    from sentinel.drift.output import render_drift_check
+    from sentinel.drift.runner import run_drift_check
 
     result = run_drift_check(
         suite_path=args.suite,

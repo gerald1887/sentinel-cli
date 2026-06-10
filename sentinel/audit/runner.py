@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import Iterable, List
 
 from sentinel.core.errors import (
     EXIT_CONTRACT_FAIL,

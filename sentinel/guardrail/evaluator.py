@@ -115,7 +115,9 @@ def evaluate_assertions(input_json: object, assertions: list[dict]) -> GuardChec
             elif assertion_type == "not_equals":
                 expected = assertion["value"]
                 status = "PASS" if found and actual != expected else "FAIL"
-                message = "Value did not match forbidden value." if status == "PASS" else "Value matched forbidden value."
+                message = (
+                    "Value did not match forbidden value." if status == "PASS" else "Value matched forbidden value."
+                )
             elif assertion_type == "in":
                 expected = assertion["values"]
                 status = "PASS" if found and actual in expected else "FAIL"

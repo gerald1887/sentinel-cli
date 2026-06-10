@@ -1,25 +1,25 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
 class AuditInputRefs:
-    prompt_file: Optional[str]
-    schema_file: Optional[str]
-    suite_file: Optional[str]
-    assertions_file: Optional[str]
-    signals_file: Optional[str]
-    rules_file: Optional[str]
+    prompt_file: str | None
+    schema_file: str | None
+    suite_file: str | None
+    assertions_file: str | None
+    signals_file: str | None
+    rules_file: str | None
 
 
 @dataclass(frozen=True)
 class AuditConfigs:
-    schema: Optional[Dict[str, Any]]
-    assertions: Optional[Any]
-    signals: Optional[Any]
-    rules: Optional[Any]
+    schema: dict[str, Any] | None
+    assertions: Any | None
+    signals: Any | None
+    rules: Any | None
 
 
 @dataclass(frozen=True)
@@ -39,10 +39,10 @@ class AuditRecord:
     execution_id: str
     input_refs: AuditInputRefs
     configs: AuditConfigs
-    result: Dict[str, Any]
-    event_ids: List[str]
+    result: dict[str, Any]
+    event_ids: list[str]
     hashes: AuditHashes
-    metadata: Optional[Dict[str, Any]]
+    metadata: dict[str, Any] | None
 
 
 @dataclass(frozen=True)
@@ -62,15 +62,15 @@ class AuditVerifyResultSummary:
 @dataclass(frozen=True)
 class AuditVerifyResult:
     summary: AuditVerifyResultSummary
-    records: List[AuditVerifyRecordResult]
-    selection: Dict[str, Any]
+    records: list[AuditVerifyRecordResult]
+    selection: dict[str, Any]
 
 
 @dataclass(frozen=True)
 class AuditReplayResult:
     audit_id: str
     status: str
-    expected_hash: Optional[str]
-    actual_hash: Optional[str]
+    expected_hash: str | None
+    actual_hash: str | None
     message: str
 

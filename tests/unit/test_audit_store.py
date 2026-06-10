@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import os
 from pathlib import Path
 
 from sentinel.audit.store import AuditStoreError, append_record, read_records

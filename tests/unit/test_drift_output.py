@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+from sentinel.drift.comparator import MetricComparisonResult
+from sentinel.drift.output import render_drift_baseline, render_drift_check
 from sentinel.drift.runner import (
     DriftBaselineRunResult,
     DriftBaselineSummary,
     DriftCheckRunResult,
     DriftCheckSummary,
 )
-from sentinel.drift.comparator import MetricComparisonResult
-from sentinel.drift.output import render_drift_baseline, render_drift_check
 from sentinel.drift.threshold_engine import ThresholdEvaluationResult
 from sentinel.drift.types import MetricFamily, MetricResultRecord
 
@@ -89,8 +89,8 @@ def test_render_drift_check_summary_first_and_only_fail_error_lines() -> None:
             ),
         ],
         current_metrics=[
-            MetricResultRecord(metric_id="m_cov", family=MetricFamily.COVERAGE, path="/coverage", key="total_cases", value=3.0),
-            MetricResultRecord(metric_id="m_cov", family=MetricFamily.COVERAGE, path="/coverage", key="approved_cases", value=2.0),
+            MetricResultRecord(metric_id="m_cov", family=MetricFamily.COVERAGE, path="/coverage", key="total_cases", value=3.0),  # noqa: E501
+            MetricResultRecord(metric_id="m_cov", family=MetricFamily.COVERAGE, path="/coverage", key="approved_cases", value=2.0),  # noqa: E501
         ],
     )
     assert render_drift_check(result) == [

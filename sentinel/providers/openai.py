@@ -56,7 +56,6 @@ class OpenAIProviderAdapter(ProviderAdapter):
             )
 
         try:
-            from openai import OpenAI
             from openai import (
                 APIConnectionError,
                 APIStatusError,
@@ -64,6 +63,7 @@ class OpenAIProviderAdapter(ProviderAdapter):
                 AuthenticationError,
                 BadRequestError,
                 NotFoundError,
+                OpenAI,
                 RateLimitError,
             )
         except Exception as exc:  # noqa: BLE001

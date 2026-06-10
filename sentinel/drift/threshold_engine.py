@@ -272,7 +272,10 @@ def evaluate_thresholds(
                         metric_id=item.metric_id,
                         key=item.key,
                         rule_source="none",
-                        message=item.message if item.message is not None else "Comparator produced error result with no threshold rule.",
+                        message=(
+                            item.message if item.message is not None
+                            else "Comparator produced error result with no threshold rule."
+                        ),
                         details={"error_code": item.error_code, "message": item.message},
                     )
                 )

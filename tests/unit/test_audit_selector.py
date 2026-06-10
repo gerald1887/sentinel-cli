@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 from sentinel.audit.selector import SelectionFilters, apply_filters
 from sentinel.audit.types import AuditConfigs, AuditHashes, AuditInputRefs, AuditRecord
 

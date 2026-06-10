@@ -7,7 +7,6 @@ from sentinel.drift.types import (
     THRESHOLD_PRECEDENCE,
     BaselineEnvelope,
     DriftResultRecord,
-    MetricDefinition,
     MetricFamily,
     MetricResultRecord,
     ThresholdRule,

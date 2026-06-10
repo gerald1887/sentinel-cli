@@ -52,3 +52,11 @@ testpaths = ["tests"]
 
 [tool.ruff]
 target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/unit/test_regression_suite_runner.py" = ["E402"]
+"tests/unit/test_regression_update_runner.py" = ["E402"]

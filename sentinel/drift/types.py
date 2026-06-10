@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 
-class MetricFamily(str, Enum):
+class MetricFamily(StrEnum):
     """Supported deterministic metric families."""
 
     COVERAGE = "coverage"
@@ -71,7 +71,7 @@ class BaselineEnvelope:
 
     version: Literal["1.0"]
     suite: str
-    metrics: list["MetricResultRecord"]
+    metrics: list[MetricResultRecord]
 
 
 @dataclass(frozen=True, slots=True)

@@ -198,7 +198,9 @@ def compare_metrics(
             )
         )
 
-    metric_results = sorted(metric_results, key=lambda item: _sort_key(item.family, item.path, item.metric_id, item.key))
+    metric_results = sorted(
+        metric_results, key=lambda item: _sort_key(item.family, item.path, item.metric_id, item.key)
+    )
     return MetricComparisonOutput(metric_results=metric_results, group_results=group_results)
 
 

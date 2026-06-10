@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from sentinel.cli import main
-from sentinel.core.errors import SentinelError
 from sentinel.providers.base import ProviderResponseNormalized
 
 

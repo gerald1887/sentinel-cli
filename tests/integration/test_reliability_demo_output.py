@@ -14,7 +14,9 @@ def fx_root() -> Path:
     return Path(__file__).resolve().parents[2] / "examples" / "fixtures" / "contract_check"
 
 
-def test_reliability_demo_validate_and_guard_paths(fx_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_reliability_demo_validate_and_guard_paths(
+    fx_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     valid = fx_root / "artifact_valid.json"
     invalid = fx_root / "artifact_invalid.json"
     schema = fx_root / "artifact_schema.json"
@@ -48,7 +50,9 @@ def test_reliability_demo_validate_and_guard_paths(fx_root: Path, tmp_path: Path
     assert "ASSERT status_is_fail FAIL" in out_guard
 
 
-def test_reliability_demo_output_is_deterministic_across_runs(fx_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_reliability_demo_output_is_deterministic_across_runs(
+    fx_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     valid = fx_root / "artifact_valid.json"
     schema = fx_root / "artifact_schema.json"
     pass_yaml = tmp_path / "guard_pass.yaml"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Dict
+from typing import Any
 
 from .normalizer import NormalizationError, normalize_for_hash
 from .types import AuditHashes, AuditRecord
@@ -22,7 +22,7 @@ def _hash_normalized(value: Any) -> str:
 
 
 def compute_hashes_for_record_components(
-    input_refs: Any, configs: Any, result: Any, full_record_without_hashes: Dict[str, Any]
+    input_refs: Any, configs: Any, result: Any, full_record_without_hashes: dict[str, Any]
 ) -> AuditHashes:
     """Compute component hashes and full_hash over full record content.
 
@@ -51,7 +51,7 @@ def compute_hashes_for_record_components(
 
 
 def recompute_hashes_for_record(record: AuditRecord) -> AuditHashes:
-    base: Dict[str, Any] = {
+    base: dict[str, Any] = {
         "audit_version": record.audit_version,
         "audit_id": record.audit_id,
         "timestamp_utc": record.timestamp_utc,

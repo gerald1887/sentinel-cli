@@ -44,7 +44,7 @@ class TestExternalMonitorGate(unittest.TestCase):
             )
             rules_path.write_text(
                 json.dumps(
-                    {"rules": [{"id": "r_pass", "signal": "pass_count", "operator": "eq", "expected": 1, "message": "ok"}]},
+                    {"rules": [{"id": "r_pass", "signal": "pass_count", "operator": "eq", "expected": 1, "message": "ok"}]},  # noqa: E501
                     sort_keys=True,
                 ),
                 encoding="utf-8",
@@ -129,7 +129,7 @@ class TestExternalMonitorGate(unittest.TestCase):
             )
             rules_path.write_text(
                 json.dumps(
-                    {"rules": [{"id": "r_fail", "signal": "pass_count", "operator": "eq", "expected": 1, "message": "must pass"}]},
+                    {"rules": [{"id": "r_fail", "signal": "pass_count", "operator": "eq", "expected": 1, "message": "must pass"}]},  # noqa: E501
                     sort_keys=True,
                 ),
                 encoding="utf-8",

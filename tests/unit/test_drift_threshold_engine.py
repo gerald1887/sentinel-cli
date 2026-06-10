@@ -36,7 +36,9 @@ def _comparison(
     )
 
 
-def _output(results: list[MetricComparisonResult], groups: list[MetricGroupComparisonResult] | None = None) -> MetricComparisonOutput:
+def _output(
+    results: list[MetricComparisonResult], groups: list[MetricGroupComparisonResult] | None = None
+) -> MetricComparisonOutput:
     return MetricComparisonOutput(metric_results=results, group_results=[] if groups is None else groups)
 
 
@@ -159,7 +161,7 @@ def test_missing_baseline_metric_error_propagates() -> None:
 def test_strict_key_set_supported() -> None:
     config = ThresholdConfig(
         per_key={},
-        per_path={"/user": ThresholdRuleDefinition(strict_key_set=("absence_count", "presence_count", "presence_rate"))},
+        per_path={"/user": ThresholdRuleDefinition(strict_key_set=("absence_count", "presence_count", "presence_rate"))},  # noqa: E501
         metric_family={},
         global_rule=None,
     )
