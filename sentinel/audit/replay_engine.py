@@ -88,8 +88,18 @@ def replay_record(
             message="unsupported replay status",
         )
 
+    # Reconstruct the full result artifact the same way the builder does: hash the
+    # complete result dict, not just approved_output. Start from the stored result
+    # (which has all the original fields) and replace the mutable output fields.
+    replay_artifact: dict = {**record.result}
+    replay_artifact["status"] = run.status
+    if run.approved_output is not None:
+        replay_artifact["approved_output"] = run.approved_output
+    elif "approved_output" in replay_artifact:
+        del replay_artifact["approved_output"]
+
     try:
-        actual_hash = _hash_normalized(run.approved_output)
+        actual_hash = _hash_normalized(replay_artifact)
     except HashingError as exc:
         return AuditReplayResult(
             audit_id=record.audit_id,
