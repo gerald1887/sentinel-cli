@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sentinel.audit.selector import SelectionFilters, apply_filters
+from sentinel.audit.selector import SelectionFilters, apply_filters, validate_selection_filters
 from sentinel.audit.types import AuditConfigs, AuditHashes, AuditInputRefs, AuditRecord
 
 
@@ -45,4 +45,24 @@ def test_selector_applies_filters_in_fixed_order() -> None:
     selected = apply_filters(records, filters)
 
     assert [r.audit_id for r in selected] == ["a2"]
+
+
+def test_invalid_filter_values_return_explicit_error() -> None:
+    bad_from = validate_selection_filters(SelectionFilters(from_ts="2024-01-01"))
+    assert bad_from is not None
+    assert bad_from.code == "SENTINEL_AUDIT_INVALID_FILTER"
+
+    bad_to = validate_selection_filters(SelectionFilters(to_ts="2024-01-01"))
+    assert bad_to is not None
+    assert bad_to.code == "SENTINEL_AUDIT_INVALID_FILTER"
+
+    from_after_to = validate_selection_filters(
+        SelectionFilters(from_ts="2024-01-03T00:00:00Z", to_ts="2024-01-01T00:00:00Z")
+    )
+    assert from_after_to is not None
+    assert from_after_to.code == "SENTINEL_AUDIT_INVALID_FILTER"
+
+    bad_last = validate_selection_filters(SelectionFilters(last=0))
+    assert bad_last is not None
+    assert bad_last.code == "SENTINEL_AUDIT_INVALID_FILTER"
 

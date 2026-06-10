@@ -351,3 +351,13 @@ class TestGuardCheckCli:
         with pytest.raises(SystemExit) as exc_info:
             main(["guard", "check", "--input", "out.json"])
         assert exc_info.value.code != 0
+
+
+class TestBareInvocation:
+    """Bare ``sentinel`` with no subcommand exits 0 and prints help."""
+
+    def test_no_subcommand_exits_zero(self, capsys: pytest.CaptureFixture[str]) -> None:
+        exit_code = main([])
+        captured = capsys.readouterr()
+        assert exit_code == 0
+        assert "Contract Enforcement Engine" in captured.out
