@@ -28,12 +28,18 @@ git clone https://github.com/gerald1887/sentinel-cli.git
 cd sentinel-cli
 ```
 
-Install with `pipx`:
+Install with `pipx` (core, no provider):
 
 ```bash
 sudo apt install pipx -y
 pipx ensurepath
 pipx install .
+```
+
+To include the OpenAI provider:
+
+```bash
+pipx install ".[openai]"
 ```
 
 ### Development install
@@ -43,8 +49,13 @@ From a clone of this repository:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements-dev.txt
-pip install -e .
+pip install -e ".[dev]"
+```
+
+To develop with the OpenAI provider also available:
+
+```bash
+pip install -e ".[openai,dev]"
 ```
 
 Ubuntu 24.04+ follows PEP 668 and blocks global `pip install`
