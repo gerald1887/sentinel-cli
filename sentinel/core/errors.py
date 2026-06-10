@@ -21,9 +21,6 @@ EXIT_CONTRACT_FAIL: int = 1
 EXIT_ERROR: int = 2
 """Execution / system error (I/O, timeout, internal bug, …)."""
 
-EXIT_DRIFT_DETECTED: int = 3
-"""Reserved exit code for future use."""
-
 # ---------------------------------------------------------------------------
 # Error categories
 # ---------------------------------------------------------------------------

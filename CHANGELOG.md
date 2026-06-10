@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `EXIT_DRIFT_DETECTED` (exit code 3) removed. It was a reserved placeholder
+  that was never part of the observable CLI contract. The three public exit
+  codes are: 0 (pass), 1 (contract or detection failure), 2 (system error).
+
 - `sentinel audit inspect` and `sentinel audit verify` now validate filter
   arguments before executing. Invalid ISO-8601 UTC timestamps in `--from` or
   `--to`, a `--from` value later than `--to`, or a `--last` value less than 1
