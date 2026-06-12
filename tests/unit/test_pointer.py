@@ -1,6 +1,6 @@
 """Unit tests for the shared JSON Pointer resolver (sentinel.core.pointer).
 
-Covers root-document shorthands (NB-1) and verifies the resolver is
+Covers root-document shorthands and verifies the resolver is
 correctly threaded through the guardrail and drift evaluation layers.
 """
 

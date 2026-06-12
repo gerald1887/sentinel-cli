@@ -205,6 +205,8 @@ Backend engineers who want repeatable checks around LLM outputs.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+Adding a new provider? See [PROVIDERS.md](PROVIDERS.md) for the adapter protocol and extension pattern.
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
@@ -212,3 +214,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+For the open-core boundary and commercial intent, see [MONETIZATION.md](MONETIZATION.md).

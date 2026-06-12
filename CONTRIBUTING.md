@@ -19,8 +19,7 @@ Thank you for helping improve Sentinel.
 From the repository root (with a virtual environment activated if you use one):
 
 ```bash
-pip install -r requirements-dev.txt
-pip install -e .
+pip install -e '.[dev]'
 python -m pytest -q
 ```
 

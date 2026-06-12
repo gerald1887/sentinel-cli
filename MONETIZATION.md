@@ -1,7 +1,9 @@
 # Monetization
 
-Sentinel core (Phases 1–6 as released) is MIT-licensed. Core
-functionality is intended to remain freely available.
+The Sentinel CLI — including contract enforcement, regression testing,
+guardrail assertions, drift detection, runtime monitoring, and audit
+capabilities — is MIT-licensed. Core functionality is intended to remain
+freely available.
 
 Future commercial offerings, if any, will be developed separately from
 this repository. Commercial work will focus on advanced compliance and
