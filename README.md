@@ -71,6 +71,12 @@ sentinel --version
 
 Commands: `run`, `validate`, `test`, `guard`, `drift`, `monitor`, `audit`.
 
+| Exit code | Meaning |
+|-----------|---------|
+| `0` PASS  | All checks passed |
+| `1` FAIL  | Contract violation, guardrail failure, or drift detected |
+| `2` ERROR | Configuration error, file not found, or provider fault |
+
 ## Minimal example (no API keys)
 
 Guard check runs entirely on local files:
@@ -105,6 +111,16 @@ sentinel run \
   [--timeout <seconds>] \
   [--assertions <assertions-file>]
 ```
+
+### Validate — `sentinel validate`
+
+```bash
+sentinel validate \
+  --input <json-file> \
+  --schema <schema-file>
+```
+
+Validates a JSON file against a JSON Schema (Draft 2020-12). Use this to confirm that a contract schema is well-formed and that a given payload satisfies it before wiring the schema into a CI run. Exits 0 on pass, 1 on schema violation or malformed JSON, 2 on file or schema structure errors.
 
 ### Regression — `sentinel test`
 
